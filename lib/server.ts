@@ -2,7 +2,10 @@ import crypto from "crypto";
 import { createClient } from "@supabase/supabase-js";
 
 const required = (name: string) => { const value = process.env[name]; if (!value) throw new Error(`Missing ${name}`); return value; };
-export const db = () => createClient(required("NEXT_PUBLIC_SUPABASE_URL"), required("SUPABASE_SERVICE_ROLE_KEY"), { auth: { persistSession: false } });
+// Vercel's Supabase integration calls its server-only key SUPABASE_SECRET_KEY.
+// SUPABASE_SERVICE_ROLE_KEY is kept as a compatible alternative for manual setups.
+const serverKey = () => process.env.SUPABASE_SECRET_KEY ?? required("SUPABASE_SERVICE_ROLE_KEY");
+export const db = () => createClient(required("NEXT_PUBLIC_SUPABASE_URL"), serverKey(), { auth: { persistSession: false } });
 export const hash = (value: string) => crypto.createHash("sha256").update(value).digest("hex");
 export const random = (bytes = 32) => crypto.randomBytes(bytes).toString("base64url");
 
